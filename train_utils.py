@@ -72,4 +72,39 @@ def one_hot_encode(df, cat_cols):
   for col in cat_cols:
     df = pd.concat([df,pd.get_dummies(df[col])], axis=1)
     df.drop(col, axis=1, inplace=True)
-  return df
+  
+  return df.astype('float64').values
+
+
+class EarlyStopping:
+    def __init__(self, patience=50, verbose=False, delta=0, checkpoint_pth='chechpoint.pt'):
+        self.patience = patience
+        self.verbose = verbose
+        self.counter = 0
+        self.best_loss = None
+        self.early_stop = False
+        self.val_loss_min = np.Inf
+        self.delta = delta
+        self.checkpoint_pth = checkpoint_pth
+
+    def __call__(self, val_loss, model):
+        loss = val_loss
+        if self.best_loss is None:
+            self.best_loss = loss
+        elif loss >= self.best_loss + self.delta:
+            self.counter += 1
+            print(f'EarlyStopping counter: {self.counter} out of {self.patience}')
+            if self.counter >= self.patience:
+                self.early_stop = True
+        else:
+            self.best_loss = loss
+            self.save_checkpoint(val_loss, model, self.checkpoint_pth)
+            self.counter = 0
+
+    def save_checkpoint(self, val_loss, model, checkpoint_pth):
+        if model is not None:
+            if self.verbose:
+                print(f'Validation loss decreased ({self.val_loss_min:.3f} --> {val_loss:.3f}).  Saving model ...')
+            torch.save(model.state_dict(), checkpoint_pth)
+            self.val_loss_min = val_loss
+            
