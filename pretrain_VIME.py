@@ -12,7 +12,8 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader
 
-from train_utils import Tabular_DS, mask_generator, pretext_generator
+from train_utils import one_hot_encode, Tabular_DS, mask_generator, pretext_generator
+#from train_utils import *
 from model_SSL import VIME
 
 
@@ -51,13 +52,14 @@ def main():
     os.chdir(PROJECT_PATH)
     
     # (3) Read dataset
+    categorical_cols = []
     with open(args.data_file,'rb') as f: 
       data = pickle.load(f)
+    data = one_hot_encode(data, categorical_cols)
 
     print('Shape of data :', data.shape)
     print('='*100)
-    ds = Tabular_DS(data, args.device)
-    
+    ds = Tabular_DS(data.values, args.device)
     train_loader = DataLoader(ds, batch_size = args.bs, shuffle=True, drop_last = True)
     
     # (4) Model

@@ -1,5 +1,6 @@
 import torch
 import numpy as np
+import pandas as pd
 from torch.utils.data import Dataset
 
 class Tabular_DS(Dataset): 
@@ -64,3 +65,11 @@ def pretext_generator(mask, x, device):
     mask_new = mask_new.type(torch.FloatTensor).to(device)
 
     return mask_new, x_tilde
+
+
+def one_hot_encode(df, cat_cols):
+  assert isinstance(df, pd.DataFrame)
+  for col in cat_cols:
+    df = pd.concat([df,pd.get_dummies(df[col])], axis=1)
+    df.drop(col, axis=1, inplace=True)
+  return df
